@@ -1,32 +1,35 @@
 """
-    Python script to optimize PDF
-    and reduce the pages size in the
-    PDF
+    Python script to create
+    a PDF based on the list of images.
+    The pages are ordered according
+    to the list index
 """
-from pypdf import PdfWriter
+from PIL import Image
 
 
-# optimize pdf size
-def optimize_pdf(input_path: str, output_path: str) -> None:
-    print(f"optimizing PDF : {input_path}...")
-    writer = PdfWriter(clone_from=input_path)
-    for page in writer.pages:
-        for img in page.images:
-            img.replace(img.image, quality=70)  # Set desired quality
-
-    with open(output_path, "wb") as f:
-        writer.write(f)
+# concatenate pages into a single pdf
+def create_pdf_using_pil(image_paths: list[str], output_path: str):
+    image_list = [Image.open(img).convert('RGB') for img in image_paths]
+    # Save into one PDF file, compress by setting quality and optimize
+    if image_list:
+        first_image = image_list[0]
+        remaining_images = image_list[1:]
+        first_image.save(output_path, save_all=True, append_images=remaining_images, quality=85, optimize=True)
+    else:
+        print("No JPEG images found in directory.")
 
 
 # init
 def main():
-    input_pdf_path = input("Enter source pdf location: ")
-    output_path = input("Enter destination file: ")
-    print("Optimizing...!")
-    optimize_pdf(
-        input_path=input_pdf_path,
+    image_paths_input = input("Enter comma-separated paths to JPEG images: ")
+    image_paths = [path.strip() for path in image_paths_input.split(',')]
+    output_path = input("Enter destination PDF file path: ")
+    print("Creating PDF...!")
+    create_pdf_using_pil(
+        image_paths=image_paths,
         output_path=output_path
     )
+
 
 if __name__ == "__main__":
     main()
